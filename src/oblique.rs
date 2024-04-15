@@ -1,4 +1,4 @@
-//! Oblique shock functions
+//! Weak oblique shock functions
 
 use eqsolver::single_variable::FDNewton;
 use num::Float;
@@ -55,7 +55,7 @@ pub fn oblique_beta_max<F: Float>(mach: F, gamma: F) -> F {
     .asin()
 }
 
-/// Calculate Mach number after weak oblique shock
+/// Mach number after weak oblique shock
 ///
 /// # Examples
 ///
@@ -77,7 +77,7 @@ pub fn oblique_mach2<F: Float>(mach: F, gamma: F, theta: F) -> F {
     .sqrt()
 }
 
-/// Calculate stagnation pressure ratio across weak oblique shock
+/// Stagnation pressure ratio across weak oblique shock
 ///
 /// # Examples
 ///
@@ -101,7 +101,7 @@ pub fn oblique_p02_p01<F: Float>(mach: F, gamma: F, theta: F) -> F {
                 .powf(gamma / (gamma - F::one())))
 }
 
-/// Calculate static pressure ratio across weak oblique shock
+/// Static pressure ratio across weak oblique shock
 ///
 /// # Examples
 ///
@@ -118,7 +118,7 @@ pub fn oblique_p2_p1<F: Float>(mach: F, gamma: F, theta: F) -> F {
     F::from(2.).unwrap() * gamma / (gamma + F::one()) * (mach1n.powi(2) - F::one()) + F::one()
 }
 
-/// Calculate static density ratio across weak oblique shock
+/// Static density ratio across weak oblique shock
 ///
 /// # Examples
 ///
@@ -136,7 +136,7 @@ pub fn oblique_rho2_rho1<F: Float>(mach: F, gamma: F, theta: F) -> F {
         / ((gamma - F::one()) * mach1n.powi(2) + F::from(2.).unwrap())
 }
 
-/// Calculate static temperature ratio across weak oblique shock
+/// Static temperature ratio across weak oblique shock
 ///
 /// # Examples
 ///
@@ -156,7 +156,7 @@ pub fn oblique_t2_t1<F: Float>(mach: F, gamma: F, theta: F) -> F {
         / ((gamma + F::one()).powi(2) * mach1n.powi(2))
 }
 
-/// Calculate speed of sound ratio across weak oblique shock
+/// Speed of sound ratio across weak oblique shock
 ///
 /// # Examples
 ///

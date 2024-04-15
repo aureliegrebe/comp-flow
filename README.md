@@ -9,6 +9,17 @@ The included functions have no input checking or error handling whatsoever.
 Invalid (non-physical) inputs such as mach < 1 for a shock relation or gamma < 1
 may produce non-sensical outputs.
 
+## Usage
+
+Add this to your `Cargo.toml`:
+
+```
+[dependencies]
+comp-flow = "0.1"
+```
+
+For API documentation, see [docs.rs](https://docs.rs/comp-flow/)
+
 ## Features
 
  - Isentropic relations calculated from Mach numbers.
@@ -20,10 +31,10 @@ may produce non-sensical outputs.
 
  - Fanno Flow
  - Rayleigh Flow
- - Oblique Shock Relations
+ - Conical Shock Relations
 
 ## Contributing
 
-Contributions are welcome, particularily optimizing the functions that make
-use of Newton's method. If a particulary relation that you use is not included,
+Contributions are welcome, particularly optimizing the functions that make
+use of Newton's method. If a particular relation that you use is not included,
 feel free to add it.

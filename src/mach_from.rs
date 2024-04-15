@@ -1,10 +1,18 @@
-//! Collection of fuctions for isentropic compressible flow.
+//! Collection of functions for isentropic compressible flow.
 
 use crate::{mach_to_a_ac, mach_to_pm_angle};
 use eqsolver::single_variable::FDNewton;
 use num::Float;
 
-/// Prandtl-Meyer angle in radians for a given mach number and specific heat ratio.
+/// Mach number for a given Prandtl-Meyer angle in radians.
+///
+/// <div class="warning">
+///
+/// This function uses Newton's method to solve for the Mach number. If this 
+/// function must be called many times, it may be preferable to make a look up
+/// table with `mach_to_pm_angle` and interpolate those values.
+///
+/// </div>
 ///
 /// # Examples
 ///
@@ -35,7 +43,7 @@ pub fn mach_from_mach_angle<F: Float>(mach_angle: F) -> F {
     (F::one()) / mach_angle.sin()
 }
 
-/// Total temperature ratio for given mach number and specific heat ratio
+/// Mach number for a given total temperature ratio.
 ///
 /// # Examples
 ///
@@ -51,7 +59,7 @@ pub fn mach_from_t_t0<F: Float>(t_t0: F, gamma: F) -> F {
     (two / (gamma - F::one()) * (F::one() / t_t0 - F::one())).sqrt()
 }
 
-/// Mach number for given total pressure ratio and specific heat ratio
+/// Mach number for a given total pressure ratio.
 ///
 /// # Examples
 ///
@@ -67,7 +75,7 @@ pub fn mach_from_p_p0<F: Float>(p_p0: F, gamma: F) -> F {
     (two / (gamma - F::one()) * (p_p0.powf((F::one() - gamma) / gamma) - F::one())).sqrt()
 }
 
-/// Mach number for given stagnation density ratio and specific heat ratio
+/// Mach number for a given stagnation density ratio.
 ///
 /// # Examples
 ///
@@ -83,7 +91,15 @@ pub fn mach_from_rho_rho0<F: Float>(rho_rho0: F, gamma: F) -> F {
     (two / (gamma - F::one()) * (rho_rho0.powf(F::one() - gamma) - F::one())).sqrt()
 }
 
-/// Critical area ratio for given mach number and specific heat ratio
+/// Mach number for a given critical area ratio.
+///
+/// <div class="warning">
+///
+/// This function uses Newton's method to solve for the Mach number. If this 
+/// function must be called many times, it may be preferable to make a look up
+/// table with `mach_to_a_ac` and interpolate those values.
+///
+/// </div>
 ///
 /// # Examples
 ///

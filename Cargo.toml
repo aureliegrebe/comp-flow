@@ -3,6 +3,7 @@ name = "comp-flow"
 version = "0.1.0"
 edition = "2021"
 authors = ["Aurélie Grebe"]
+documentation = "https://docs.rs/comp-flow/"
 description = "Basic compressible flow relations"
 readme = "README.md"
 repository = "https://github.com/aureliegrebe/comp-flow"

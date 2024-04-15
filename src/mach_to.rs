@@ -1,5 +1,5 @@
 //! Collection of functions for isentropic compressible flow.
-
+#[doc(no_inline)]
 use num::Float;
 
 /// Prandtl-Meyer angle in radians for a given mach number and specific heat ratio.

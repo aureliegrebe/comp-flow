@@ -1,7 +1,7 @@
 //! Normal Shock relations
 use num::Float;
 
-/// Calculate Mach number after normal shock
+/// Mach number after normal shock
 ///
 /// # Examples
 ///
@@ -19,7 +19,7 @@ pub fn normal_mach2<F: Float>(mach: F, gamma: F) -> F {
         .sqrt()
 }
 
-/// Calculate total pressure ratio across normal shock
+/// Total pressure ratio across normal shock
 ///
 /// # Examples
 ///
@@ -40,7 +40,7 @@ pub fn normal_p02_p01<F: Float>(mach: F, gamma: F) -> F {
                 .powf(gamma / (gamma - F::one())))
 }
 
-/// Calculate static pressure ratio across normal shock
+/// Static pressure ratio across normal shock
 ///
 /// # Examples
 ///
@@ -55,7 +55,7 @@ pub fn normal_p2_p1<F: Float>(mach: F, gamma: F) -> F {
     F::from(2.).unwrap() * gamma / (gamma + F::one()) * (mach.powi(2) - F::one()) + F::one()
 }
 
-/// Calculate static density ratio across normal shock
+/// Static density ratio across normal shock
 ///
 /// # Examples
 ///
@@ -70,7 +70,7 @@ pub fn normal_rho2_rho1<F: Float>(mach: F, gamma: F) -> F {
     (gamma + F::one()) * mach.powi(2) / ((gamma - F::one()) * mach.powi(2) + F::from(2.).unwrap())
 }
 
-/// Calculate static density ratio across normal shock
+/// Static temperature ratio across normal shock
 ///
 /// # Examples
 ///
@@ -87,7 +87,7 @@ pub fn normal_t2_t1<F: Float>(mach: F, gamma: F) -> F {
         / ((gamma + F::one()).powi(2) * mach.powi(2))
 }
 
-/// Calculate speed of sound ratio across normal shock
+/// Speed of sound ratio across normal shock
 ///
 /// # Examples
 ///
