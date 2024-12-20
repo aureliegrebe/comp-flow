@@ -8,7 +8,7 @@ use num::Float;
 ///
 /// <div class="warning">
 ///
-/// This function uses Newton's method to solve for the Mach number. If this 
+/// This function uses Newton's method to solve for the Mach number. If this
 /// function must be called many times, it may be preferable to make a look up
 /// table with `mach_to_pm_angle` and interpolate those values.
 ///
@@ -95,7 +95,7 @@ pub fn mach_from_rho_rho0<F: Float>(rho_rho0: F, gamma: F) -> F {
 ///
 /// <div class="warning">
 ///
-/// This function uses Newton's method to solve for the Mach number. If this 
+/// This function uses a bisection algorythm to solve for the Mach number. If this
 /// function must be called many times, it may be preferable to make a look up
 /// table with `mach_to_a_ac` and interpolate those values.
 ///
@@ -106,21 +106,48 @@ pub fn mach_from_rho_rho0<F: Float>(rho_rho0: F, gamma: F) -> F {
 /// ```
 /// use comp_flow::mach_from_a_ac;
 ///
-/// assert_eq!(mach_from_a_ac(5.821828750000001, 1.4, false), 0.1);
+/// assert_eq!(mach_from_a_ac(1.6875000000000002_f64, 1.4, true), 2.0);
+/// assert_eq!(mach_from_a_ac(5.821828750000001_f64, 1.4, false), 0.1);
+/// assert_eq!(mach_from_a_ac(6.25, 1.4, false), 0.09307469911759117);
 /// assert_eq!(mach_from_a_ac(1.0, 1.4, false), 1.0);
 /// assert_eq!(mach_from_a_ac(1.0, 1.4, true), 1.0);
-/// assert_eq!(mach_from_a_ac(1.6875000000000002, 1.4, true), 2.0);
 /// ```
 pub fn mach_from_a_ac<F: Float>(a_ac: F, gamma: F, supersonic: bool) -> F {
     if a_ac.is_one() {
         return F::one();
     }
-    let f = |m| mach_to_a_ac(m, gamma) - a_ac;
-    let x0: F;
+    let mut m_max: F;
+    let mut m_min: F;
     if supersonic {
-        x0 = F::from(1.01).unwrap();
+        m_max = F::max_value();
+        m_min = F::one();
     } else {
-        x0 = F::from(0.99).unwrap();
+        m_max = F::one();
+        m_min = F::zero();
     }
-    FDNewton::new(f).solve(x0).unwrap()
+    let mut m_try = (m_max + m_min) / F::from(2.).unwrap();
+    let mut val: F;
+    let mut i: usize = 0;
+    let max_iter: usize = 10000;
+    while i < max_iter {
+        val = mach_to_a_ac(m_try, gamma);
+        if val == a_ac {
+            return m_try;
+        } else if val < a_ac {
+            if supersonic {
+                m_min = m_try;
+            } else {
+                m_max = m_try;
+            }
+        } else if val > a_ac {
+            if supersonic {
+                m_max = m_try;
+            } else {
+                m_min = m_try;
+            }
+        }
+        m_try = (m_max + m_min) / F::from(2.).unwrap();
+        i += 1;
+    }
+    return m_try;
 }
