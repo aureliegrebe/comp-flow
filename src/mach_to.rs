@@ -50,6 +50,22 @@ pub fn mach_to_t_t0<F: Float>(mach: F, gamma: F) -> F {
     (F::one() + half * (gamma - F::one()) * mach.powi(2)).powi(-1)
 }
 
+/// Total temperature ratio for given mach number and specific heat ratio
+///
+/// # Examples
+///
+/// ```
+/// use comp_flow::mach_to_t0_t;
+///
+/// assert_eq!(mach_to_t0_t(0.0, 1.4), 1.0);
+/// assert_eq!(mach_to_t0_t(1.0, 1.4), 1.2);
+/// assert_eq!(mach_to_t0_t(2.0_f32, 1.4), 1.8);
+/// ```
+pub fn mach_to_t0_t<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    F::one() + half * (gamma - F::one()) * mach.powi(2)
+}
+
 /// Total pressure ratio for given mach number and specific heat ratio
 ///
 /// # Examples
@@ -64,6 +80,22 @@ pub fn mach_to_t_t0<F: Float>(mach: F, gamma: F) -> F {
 pub fn mach_to_p_p0<F: Float>(mach: F, gamma: F) -> F {
     let half = F::from(0.5).unwrap();
     (F::one() + half * (gamma - F::one()) * mach.powi(2)).powf((gamma) / (F::one() - gamma))
+}
+
+/// Total pressure ratio for given mach number and specific heat ratio
+///
+/// # Examples
+///
+/// ```
+/// use comp_flow::mach_to_p0_p;
+///
+/// assert_eq!(mach_to_p0_p(0.0, 1.4), 1.0);
+/// assert_eq!(mach_to_p0_p(1.0, 1.4), 1.892929158737854);
+/// assert_eq!(mach_to_p0_p(2.0, 1.4), 7.824449066867263);
+/// ```
+pub fn mach_to_p0_p<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    (F::one() + half * (gamma - F::one()) * mach.powi(2)).powf((gamma) / (gamma - F::one()))
 }
 
 /// Stagnation density ratio for given mach number and specific heat ratio
@@ -82,7 +114,23 @@ pub fn mach_to_rho_rho0<F: Float>(mach: F, gamma: F) -> F {
     (F::one() + half * (gamma - F::one()) * mach.powi(2)).powf(F::one() / (F::one() - gamma))
 }
 
-/// Critical area ratio for given mach number and specific heat ratio
+/// Stagnation density ratio for given mach number and specific heat ratio
+///
+/// # Examples
+///
+/// ```
+/// use comp_flow::mach_to_rho0_rho;
+///
+/// assert_eq!(mach_to_rho0_rho(0.0, 1.4), 1.0);
+/// assert_eq!(mach_to_rho0_rho(1.0, 1.4), 1.5774409656148785);
+/// assert_eq!(mach_to_rho0_rho(2.0, 1.4), 4.3469161482595915);
+/// ```
+pub fn mach_to_rho0_rho<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    (F::one() + half * (gamma - F::one()) * mach.powi(2)).powf(F::one() / (gamma - F::one()))
+}
+
+/// Critical area ratio for given Mach number and specific heat ratio
 ///
 /// # Examples
 ///
@@ -98,4 +146,40 @@ pub fn mach_to_a_ac<F: Float>(mach: F, gamma: F) -> F {
     F::one() / mach
         * ((F::one() + half * (gamma - F::one()) * mach.powi(2)) / (half * (gamma + F::one())))
             .powf(half * (gamma + F::one()) / (gamma - F::one()))
+}
+
+/// Normalised velocity for given Mach number and specific heat ratio
+pub fn mach_to_v_cpt0<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    (gamma - F::one()).sqrt()
+        * mach
+        * (F::one() + half * (gamma - F::one()) * mach.powi(2))
+            .sqrt()
+            .powi(-1)
+}
+
+/// Normalised mass flow for given Mach number and specific heat ratio
+pub fn mach_to_mcpt0_ap0<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    gamma / (gamma - F::one()).sqrt()
+        * mach
+        * (F::one() + half * (gamma - F::one()) * mach.powi(2))
+            .powf(-half * (gamma + F::one()) / (gamma - F::one()))
+}
+
+/// Static normalised mass flow for given Mach number and specific heat ratio
+pub fn mach_to_mcpt0_ap<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    gamma / (gamma - F::one()).sqrt()
+        * mach
+        * (F::one() + half * (gamma - F::one()) * mach.powi(2)).sqrt()
+}
+
+/// Impulse function for given Mach number and specific heat ratio
+pub fn mach_to_f_mcpt<F: Float>(mach: F, gamma: F) -> F {
+    let half = F::from(0.5).unwrap();
+    (gamma - F::one()).sqrt() / gamma * (F::one() + gamma * mach.powi(2)) / mach
+        * (F::one() + half * (gamma - F::one()) * mach.powi(2))
+            .sqrt()
+            .powi(-1)
 }

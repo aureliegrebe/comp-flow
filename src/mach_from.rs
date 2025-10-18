@@ -59,6 +59,22 @@ pub fn mach_from_t_t0<F: Float>(t_t0: F, gamma: F) -> F {
     (two / (gamma - F::one()) * (F::one() / t_t0 - F::one())).sqrt()
 }
 
+/// Mach number for a given total temperature ratio.
+///
+/// # Examples
+///
+/// ```
+/// use comp_flow::mach_from_t0_t;
+///
+/// assert_eq!(mach_from_t0_t(1.0, 1.4), 0.0);
+/// assert_eq!(mach_from_t0_t(0.8333333333333334, 1.4), 1.0);
+/// assert_eq!(mach_from_t0_t(0.55555556_f32, 1.4), 2.0);
+/// ```
+pub fn mach_from_t0_t<F: Float>(t_t0: F, gamma: F) -> F {
+    let two = F::from(2.0).unwrap();
+    (two / (gamma - F::one()) * (F::one() / t_t0 - F::one())).sqrt()
+}
+
 /// Mach number for a given total pressure ratio.
 ///
 /// # Examples
