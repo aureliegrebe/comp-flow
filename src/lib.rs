@@ -12,7 +12,8 @@
 //!
 #![warn(missing_docs)]
 
-pub mod der;
+pub mod der_mach_to;
+pub mod der_normal;
 pub mod mach_from;
 pub mod mach_to;
 pub mod normal;
