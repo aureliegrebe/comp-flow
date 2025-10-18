@@ -12,11 +12,14 @@
 //!
 #![warn(missing_docs)]
 
+pub mod der;
 pub mod mach_from;
 pub mod mach_to;
 pub mod normal;
 pub mod oblique;
 
+#[doc(inline)]
+pub use der::*;
 #[doc(inline)]
 pub use mach_from::*;
 #[doc(inline)]
