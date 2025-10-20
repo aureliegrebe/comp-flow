@@ -1,5 +1,7 @@
 //! Collection of functions for isentropic compressible flow.
 
+use crate::der_mach_to_mcpt0_ap;
+use crate::mach_to_mcpt0_ap;
 use crate::{
     der_mach_to_f_mcpt0, der_mach_to_mcpt0_ap0, der_normal_mach2, der_normal_p02_p01, mach_to_a_ac,
     mach_to_f_mcpt, mach_to_mcpt0_ap0, mach_to_pm_angle, normal_mach2, normal_p02_p01,
