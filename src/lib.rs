@@ -20,7 +20,9 @@ pub mod normal;
 pub mod oblique;
 
 #[doc(inline)]
-pub use der::*;
+pub use der_mach_to::*;
+#[doc(inline)]
+pub use der_normal::*;
 #[doc(inline)]
 pub use mach_from::*;
 #[doc(inline)]
