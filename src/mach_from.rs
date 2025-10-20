@@ -1,8 +1,8 @@
 //! Collection of functions for isentropic compressible flow.
 
 use crate::{
-    der_mach_to_f_mcpt0, der_mach_to_mcpt0_ap0, mach_to_a_ac, mach_to_f_mcpt, mach_to_mcpt0_ap0,
-    mach_to_pm_angle,
+    der_mach_to_f_mcpt0, der_mach_to_mcpt0_ap0, der_normal_mach2, der_normal_p02_p01, mach_to_a_ac,
+    mach_to_f_mcpt, mach_to_mcpt0_ap0, mach_to_pm_angle, normal_mach2, normal_p02_p01,
 };
 use eqsolver::single_variable::{FDNewton, Newton};
 use num::Float;
@@ -117,8 +117,8 @@ pub fn mach_from_v_cpt0<F: Float>(v_cpt0: F, gamma: F) -> F {
 }
 
 pub fn mach_from_f_mcpt0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> F {
-    let f = |m| mach_to_f_mcpt(m, gamma);
-    let df = |m| der_mach_to_f_mcpt0(m, gamma);
+    let f = |m| mach_to_f_mcpt(m, gamma) - f_mcpt0;
+    let df = |m| der_mach_to_f_mcpt0(m, gamma) - f_mcpt0;
     let x0 = match supersonic {
         true => F::from(1.5).unwrap(),
         false => F::from(0.5).unwrap(),
@@ -126,9 +126,9 @@ pub fn mach_from_f_mcpt0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> F 
     Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
 }
 
-pub fn mach_from_mcpt0_ap0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> F {
-    let f = |m| mach_to_mcpt0_ap0(m, gamma);
-    let df = |m| der_mach_to_mcpt0_ap0(m, gamma);
+pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -> F {
+    let f = |m| mach_to_mcpt0_ap0(m, gamma) - mcpt0_ap0;
+    let df = |m| der_mach_to_mcpt0_ap0(m, gamma) - mcpt0_ap0;
     let x0 = match supersonic {
         true => F::from(1.5).unwrap(),
         false => F::from(0.5).unwrap(),
@@ -136,9 +136,9 @@ pub fn mach_from_mcpt0_ap0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> 
     Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
 }
 
-pub fn mach_from_mcpt0_ap<F: Float>(f_mcpt0: F, gamma: F) -> F {
-    let f = |m| mach_to_mcpt0_ap(m, gamma);
-    let df = |m| der_mach_to_mcpt0_ap(m, gamma);
+pub fn mach_from_mcpt0_ap<F: Float>(mcpt0_ap: F, gamma: F) -> F {
+    let f = |m| mach_to_mcpt0_ap(m, gamma) - mcpt0_ap;
+    let df = |m| der_mach_to_mcpt0_ap(m, gamma) - mcpt0_ap;
     let x0 = F::from(0.5).unwrap();
     Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
 }
@@ -202,4 +202,21 @@ pub fn mach_from_a_ac<F: Float>(a_ac: F, gamma: F, supersonic: bool) -> F {
         i += 1;
     }
     return m_try;
+}
+
+pub fn mach_from_normal_mach2<F: Float>(mach2: F, gamma: F) -> F {
+    if mach2 > F::one() {
+        return F::nan();
+    }
+    let f = |m| normal_mach2(m, gamma) - mach2;
+    let df = |m| der_normal_mach2(m, gamma) - mach2;
+    let x0 = F::from(0.5).unwrap();
+    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+}
+
+pub fn mach_from_normal_p02_p01<F: Float>(p02_p01: F, gamma: F) -> F {
+    let f = |m| normal_p02_p01(m, gamma) - p02_p01;
+    let df = |m| der_normal_p02_p01(m, gamma) - p02_p01;
+    let x0 = F::from(1.5).unwrap();
+    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
 }
