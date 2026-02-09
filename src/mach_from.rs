@@ -130,13 +130,43 @@ pub fn mach_from_f_mcpt0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> F 
 }
 
 pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -> F {
-    let f = |m| mach_to_mcpt0_ap0(m, gamma) - mcpt0_ap0;
-    let df = |m| der_mach_to_mcpt0_ap0(m, gamma) - mcpt0_ap0;
-    let x0 = match supersonic {
-        true => F::from(1.5).unwrap(),
-        false => F::from(0.5).unwrap(),
-    };
-    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+    let half = F::from(0.5).unwrap();
+    let gm1 = gamma - F::one();
+    let gp1 = gamma + F::one();
+    let gm1_2 = gm1 * half;
+    let gp1_2 = gp1 * half;
+    let m_gp1_gm1_2 = gp1 / gm1 * -half;
+    let g_sq_gm1 = gamma / gm1.sqrt();
+    let fcrit = g_sq_gm1 * (F::one() + gm1_2).powf(m_gp1_gm1_2);
+    if mcpt0_ap0 > fcrit {
+        return F::nan();
+    }
+    let mut ma: F;
+    if supersonic {
+        ma = F::from(1.5).unwrap();
+    } else {
+        ma = half;
+    }
+    let mut k = 0;
+    let mut err = F::infinity();
+    let tol = F::from(1e-6).unwrap();
+    while err > tol && k < 100 {
+        k = k + 1;
+        // USE NEWTON'S METHOD FOR NEW GUESS OF MA
+        let to_t = F::one() + gm1_2 * ma.powi(2);
+        let f = g_sq_gm1 * ma * to_t.powf(m_gp1_gm1_2);
+        let df = f * (F::one() - gp1_2 * ma.powi(2) / to_t) / ma;
+        let manew = ma - (f - mcpt0_ap0) / df;
+        err = (manew - ma).abs();
+        ma = manew;
+    }
+    let mach: F;
+    if err < tol {
+        mach = ma;
+    } else {
+        mach = F::nan();
+    }
+    mach
 }
 
 pub fn mach_from_mcpt0_ap<F: Float>(mcpt0_ap: F, gamma: F) -> F {
@@ -144,8 +174,6 @@ pub fn mach_from_mcpt0_ap<F: Float>(mcpt0_ap: F, gamma: F) -> F {
     let gm1 = gamma - F::one();
     let gp1 = gamma + F::one();
     let gm1_2 = gm1 * half;
-    let gp1_2 = gp1 * half;
-    let m_gp1_gm1_2 = gp1 / gm1 * half;
     let g_sq_gm1 = gamma / gm1.sqrt();
     let tol = F::from(1e-6).unwrap();
     let mut ma = F::from(0.5).unwrap();
