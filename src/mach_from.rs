@@ -7,6 +7,7 @@ use crate::{
     mach_to_f_mcpt, mach_to_mcpt0_ap0, mach_to_pm_angle, normal_mach2, normal_p02_p01,
 };
 use eqsolver::single_variable::{FDNewton, Newton};
+use num::range;
 use num::Float;
 
 /// Mach number for a given Prandtl-Meyer angle in radians.
@@ -139,10 +140,34 @@ pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -
 }
 
 pub fn mach_from_mcpt0_ap<F: Float>(mcpt0_ap: F, gamma: F) -> F {
-    let f = |m| mach_to_mcpt0_ap(m, gamma) - mcpt0_ap;
-    let df = |m| der_mach_to_mcpt0_ap(m, gamma) - mcpt0_ap;
-    let x0 = F::from(0.5).unwrap();
-    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+    let half = F::from(0.5).unwrap();
+    let gm1 = gamma - F::one();
+    let gp1 = gamma + F::one();
+    let gm1_2 = gm1 * half;
+    let gp1_2 = gp1 * half;
+    let m_gp1_gm1_2 = gp1 / gm1 * half;
+    let g_sq_gm1 = gamma / gm1.sqrt();
+    let tol = F::from(1e-6).unwrap();
+    let mut ma = F::from(0.5).unwrap();
+    let mut err = F::infinity();
+    let mut k: i32 = 0;
+    while err > tol && k < 100 {
+        k = k + 1;
+        // USE NEWTON'S METHOD FOR NEW GUESS OF MA
+        let to_t = F::one() + gm1_2 * ma.powi(2);
+        let f = g_sq_gm1 * ma * to_t.sqrt();
+        let df = g_sq_gm1 * (to_t.powi(2) - gm1_2 * ma.powi(2) / to_t.sqrt());
+        let manew = ma - (f - mcpt0_ap) / df;
+        err = (manew - ma).abs();
+        ma = manew;
+    }
+    let mach: F;
+    if err < tol {
+        mach = ma;
+    } else {
+        mach = F::nan();
+    }
+    mach
 }
 
 /// Mach number for a given critical area ratio.
