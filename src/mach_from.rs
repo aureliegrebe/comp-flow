@@ -1,13 +1,11 @@
 //! Collection of functions for isentropic compressible flow.
+//! TODO: finish documentation
 
-use crate::der_mach_to_mcpt0_ap;
-use crate::mach_to_mcpt0_ap;
 use crate::{
-    der_mach_to_f_mcpt0, der_mach_to_mcpt0_ap0, der_normal_mach2, der_normal_p02_p01, mach_to_a_ac,
-    mach_to_f_mcpt, mach_to_mcpt0_ap0, mach_to_pm_angle, normal_mach2, normal_p02_p01,
+    der_mach_to_f_mcpt0, der_normal_mach2, der_normal_p02_p01, mach_to_a_ac, mach_to_f_mcpt,
+    mach_to_pm_angle, normal_mach2, normal_p02_p01,
 };
 use eqsolver::single_variable::{FDNewton, Newton};
-use num::range;
 use num::Float;
 
 /// Mach number for a given Prandtl-Meyer angle in radians.
@@ -31,7 +29,10 @@ use num::Float;
 pub fn mach_from_pm_angle<F: Float>(pm_angle: F, gamma: F) -> F {
     let f = |m| mach_to_pm_angle(m, gamma) - pm_angle;
     let x0 = F::from(2.).unwrap();
-    FDNewton::new(f).solve(x0).unwrap()
+    match FDNewton::new(f).solve(x0) {
+        Ok(x) => x,
+        Err(_) => F::nan(),
+    }
 }
 
 /// Mach number for a given mach angle in radians.
@@ -45,7 +46,7 @@ pub fn mach_from_pm_angle<F: Float>(pm_angle: F, gamma: F) -> F {
 /// assert_eq!(mach_from_mach_angle(1.5707963267948966_f64), 1.0);
 /// ```
 pub fn mach_from_mach_angle<F: Float>(mach_angle: F) -> F {
-    // TODO check for invalid input i.e. mach_angle > 90 deg
+    // TODO: check for invalid input i.e. mach_angle > 90 deg
     (F::one()) / mach_angle.sin()
 }
 
@@ -126,7 +127,10 @@ pub fn mach_from_f_mcpt0<F: Float>(f_mcpt0: F, gamma: F, supersonic: bool) -> F 
         true => F::from(1.5).unwrap(),
         false => F::from(0.5).unwrap(),
     };
-    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+    match Newton::new(f, df).with_itermax(100).solve(x0) {
+        Ok(x) => x,
+        Err(_) => F::nan(),
+    }
 }
 
 pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -> F {
@@ -141,11 +145,11 @@ pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -
     if mcpt0_ap0 > fcrit {
         return F::nan();
     }
-    let mut ma: F;
+    let mut m_try: F;
     if supersonic {
-        ma = F::from(1.5).unwrap();
+        m_try = F::from(1.5).unwrap();
     } else {
-        ma = half;
+        m_try = half;
     }
     let mut k = 0;
     let mut err = F::infinity();
@@ -153,16 +157,16 @@ pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -
     while err > tol && k < 100 {
         k = k + 1;
         // USE NEWTON'S METHOD FOR NEW GUESS OF MA
-        let to_t = F::one() + gm1_2 * ma.powi(2);
-        let f = g_sq_gm1 * ma * to_t.powf(m_gp1_gm1_2);
-        let df = f * (F::one() - gp1_2 * ma.powi(2) / to_t) / ma;
-        let manew = ma - (f - mcpt0_ap0) / df;
-        err = (manew - ma).abs();
-        ma = manew;
+        let to_t = F::one() + gm1_2 * m_try.powi(2);
+        let f = g_sq_gm1 * m_try * to_t.powf(m_gp1_gm1_2);
+        let df = f * (F::one() - gp1_2 * m_try.powi(2) / to_t) / m_try;
+        let m_new = m_try - (f - mcpt0_ap0) / df;
+        err = (m_new - m_try).abs();
+        m_try = m_new;
     }
     let mach: F;
     if err < tol {
-        mach = ma;
+        mach = m_try;
     } else {
         mach = F::nan();
     }
@@ -172,26 +176,25 @@ pub fn mach_from_mcpt0_ap0<F: Float>(mcpt0_ap0: F, gamma: F, supersonic: bool) -
 pub fn mach_from_mcpt0_ap<F: Float>(mcpt0_ap: F, gamma: F) -> F {
     let half = F::from(0.5).unwrap();
     let gm1 = gamma - F::one();
-    let gp1 = gamma + F::one();
     let gm1_2 = gm1 * half;
     let g_sq_gm1 = gamma / gm1.sqrt();
     let tol = F::from(1e-6).unwrap();
-    let mut ma = F::from(0.5).unwrap();
+    let mut m_try = F::from(0.5).unwrap();
     let mut err = F::infinity();
-    let mut k: i32 = 0;
-    while err > tol && k < 100 {
-        k = k + 1;
-        // USE NEWTON'S METHOD FOR NEW GUESS OF MA
-        let to_t = F::one() + gm1_2 * ma.powi(2);
-        let f = g_sq_gm1 * ma * to_t.sqrt();
-        let df = g_sq_gm1 * (to_t.powi(2) - gm1_2 * ma.powi(2) / to_t.sqrt());
-        let manew = ma - (f - mcpt0_ap) / df;
-        err = (manew - ma).abs();
-        ma = manew;
+    let mut i: i32 = 0;
+    while err > tol && i < 100 {
+        i = i + 1;
+        // use newton's method
+        let to_t = F::one() + gm1_2 * m_try.powi(2);
+        let f = g_sq_gm1 * m_try * to_t.sqrt();
+        let df = g_sq_gm1 * (to_t.powi(2) - gm1_2 * m_try.powi(2) / to_t.sqrt());
+        let m_new = m_try - (f - mcpt0_ap) / df;
+        err = (m_new - m_try).abs();
+        m_try = m_new;
     }
     let mach: F;
     if err < tol {
-        mach = ma;
+        mach = m_try;
     } else {
         mach = F::nan();
     }
@@ -266,12 +269,18 @@ pub fn mach_from_normal_mach2<F: Float>(mach2: F, gamma: F) -> F {
     let f = |m| normal_mach2(m, gamma) - mach2;
     let df = |m| der_normal_mach2(m, gamma) - mach2;
     let x0 = F::from(0.5).unwrap();
-    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+    match Newton::new(f, df).with_itermax(100).solve(x0) {
+        Ok(x) => x,
+        Err(_) => F::nan(),
+    }
 }
 
 pub fn mach_from_normal_p02_p01<F: Float>(p02_p01: F, gamma: F) -> F {
     let f = |m| normal_p02_p01(m, gamma) - p02_p01;
     let df = |m| der_normal_p02_p01(m, gamma) - p02_p01;
     let x0 = F::from(1.5).unwrap();
-    Newton::new(f, df).with_itermax(100).solve(x0).unwrap()
+    match Newton::new(f, df).with_itermax(100).solve(x0) {
+        Ok(x) => x,
+        Err(_) => F::nan(),
+    }
 }

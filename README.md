@@ -15,7 +15,7 @@ Add this to your `Cargo.toml`:
 
 ```
 [dependencies]
-comp-flow = "0.1"
+comp-flow = "0.2"
 ```
 
 For API documentation, see [docs.rs](https://docs.rs/comp-flow/)
